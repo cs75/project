@@ -66,37 +66,3 @@ class HMMModel:
             for s2 in ['mat','del','ins']:
                 print '(%s,%s)' % (s1,s2), self.trans[(s1,s2)]
         print '\n---------------------------------\n'
-
-M = HMMModel('ACGT',3,0)
-
-M['mat']['A'][1] += 4
-M['mat']['C'][3] += 4
-M['mat']['G'][2] += 3
-
-M['ins']['A'][2] += 6
-M['ins']['G'][2] += 1
-
-M[('mat','mat')][0] += 4
-M[('mat','mat')][1] += 3
-M[('mat','mat')][2] += 2
-M[('mat','mat')][3] += 4
-
-M[('mat','del')][0] += 1
-M[('mat','del')][1] += 1
-
-M[('mat','ins')][2] += 1
-
-M[('ins','mat')][2] += 2
-M[('ins','del')][2] += 1
-M[('ins','ins')][2] += 4
-
-M[('del','mat')][3] += 1
-M[('del','del')][1] += 1
-M[('del','ins')][2] += 2
-
-M.print_model()
-
-def viterbi(model):
-    pass
-    
-viterbi(M)

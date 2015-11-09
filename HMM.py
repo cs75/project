@@ -103,89 +103,46 @@ def build_model(aligned_sequences, psuedo_count=1, nucleotides=True):
     
     
     
-model = build_model(aligned_sequences,0) # test
-model.print_model()
+# model = build_model(aligned_sequences,0) # test
+# model.print_model()
 
 
-def build_model1(aligned_sequences, psuedocount, nucleotides=True):
-    '''Description
-    '''
-    
-    symbols = 'ACGT' if nucleotides == True else 'GPAVLIMCFYWHKRQNEDST'
-    states = ['match','insert','delete']
-    
-    total_count = len(aligned_sequences)
-    length = len(aligned_sequences[0])
-    
-    psuedocount = float(psuedocount)
-    
-    emissions = dict.fromkeys(symbols, psuedocount) 
-    transitions = dict.fromkeys(states, dict.fromkeys(states, psuedocount))   
-     
-    match_scores = [None]
-    insert_scores = []
-    
-    transition_scores = []
-    
-    columns = ''
-    
-    prev_match_states = {}
-    prev_insert_states = {}
-    
-    for pos in range(length):
-        gap_count = 0
-        match_count = dict(emissions)
-        column = ''
-        curr_state = ''
-        for seq in aligned_sequences:
-            emission = seq[pos]
-            if emission == '-':
-                pass
-            else:
-                match_count[emission] += 1
-                column += seq[pos]
-            curr_state += emission
-        
-        gap_count = curr_state.count('-')
-        # match_count = total_count - gap_count
-        
-        if pos == 0: # initial column
-            pass
-        
-        if match_count[max(match_count, key=match_count.get)] > total_count / 2.0: # match state
-            match_scores.append(dict(emissions))
-            match_scores[len(match_scores)-1] = count_symbols(column, symbols, psuedocount)
-            
-            insert_scores.append(dict(emissions))
-            insert_scores[len(insert_scores)-1] = count_symbols(columns, symbols, psuedocount)
-            
-            transition_scores.append(dict(transitions))
-            
-            columns = ''
-            prev_match_states[pos] = curr_state
-            
-        else: # insert state
-            columns += column
-            prev_insert_states[pos] = curr_state
-            
-        if pos == length-1: # final column 
-            insert_scores.append(dict(emissions))
-            insert_scores[len(match_scores)-1] = count_symbols(columns, symbols, psuedocount)
-            
-            transition_scores.append(dict(transitions))
-            transition_scores[len(transition_scores)-1]['insert']['insert'] = 0.0
-                            
-    print 'match emissions', '\n'
-    for pos in range(len(match_scores)):
-        print pos, ':', match_scores[pos], '\n'
-        
-    print 'insert emissions', '\n'
-    for pos in range(len(insert_scores)):
-        print pos, ':', insert_scores[pos], '\n'
-    
-    print 'state transitions', '\n'
-    for pos in range(len(transition_scores)):
-        print pos, ':', transition_scores[pos], '\n'
-        
-    print 'match states: ', prev_match_states
-    print 'insert states:', prev_insert_states
+
+
+
+M = HMMModel('ACGT',3,1)
+
+M['mat']['A'][1] += 4
+M['mat']['C'][3] += 4
+M['mat']['G'][2] += 3
+
+M['ins']['A'][2] += 6
+M['ins']['G'][2] += 1
+
+M[('mat','mat')][0] += 4
+M[('mat','mat')][1] += 3
+M[('mat','mat')][2] += 2
+M[('mat','mat')][3] += 4
+
+M[('mat','del')][0] += 1
+M[('mat','del')][1] += 1
+
+M[('mat','ins')][2] += 1
+
+M[('ins','mat')][2] += 2
+M[('ins','del')][2] += 1
+M[('ins','ins')][2] += 4
+
+M[('del','mat')][3] += 1
+M[('del','del')][1] += 1
+M[('del','ins')][2] += 2
+
+M.print_model()
+
+def viterbi(model,sequence):
+    M.normalize()
+    M.print_model()
+
+    pass
+
+viterbi(M,"ACTGA")
