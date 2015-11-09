@@ -139,9 +139,37 @@ M[('del','ins')][2] += 2
 
 M.print_model()
 
+
+class Sequence(object):
+
+    def __init__(self, letter):
+        self.letter = letter
+        self.state = None
+
+
 def viterbi(model,sequence):
     M.normalize()
     M.print_model()
+
+
+    queue = deque
+
+    for pos in range(len(sequence)):
+
+        if pos == 0:
+            lastState = "mat"
+
+        if sequence[pos] == "-":
+            currState = "del"
+
+
+            # clarify: convergent or modify input sequence?
+        # a -> t
+        # a -> a
+
+
+
+
 
     pass
 
