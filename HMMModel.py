@@ -1,3 +1,7 @@
+from collections import deque
+from time import sleep
+
+
 class HMMModel:
     def __init__(self,alphabet,match_state_count,psuedocount):
         self.alphabet = [letter for letter in alphabet]
@@ -30,26 +34,55 @@ class HMMModel:
         return None
         
     def normalize(self):
+
+        letters = ['A', 'C', 'G', 'T']
+
+        
+        #for each key in the current dictionary
+       
+
         for key in self.state:
-            for letter in self.state[key]:
-                total_count = float(0)
-                
-                for i in range(len(self.state[key][letter])):
+            index = 0
+            #for i in the length of the number of states 
+
+            for i in range(len(self.state[key][letters[index]])):
+
+
+                total_count = float(0)        
+
+
+                #for each character in the amino acid alphabet 
+                for letter in letters:
+
+
+                    print "value: ", self.state[key][letter][i], " for letter: ", letter, " at match state: ", i 
+                    # print self.state[key][letters[index]][i]
+                    # sleep(1)
+                    # initialize the count 
+                    #update counts 
                     if self.state[key][letter][i] != None:
                         total_count += self.state[key][letter][i]
-                for i in range(len(self.state[key][letter])):
+                        # print total_count
+                
+                if self.state[key][letter][i] != None:
+                    print "total before normalized: ", total_count
+
+                for letter in letters:
                     if self.state[key][letter][i] != None:
                         self.state[key][letter][i] /= total_count
-        
-        for key in self.trans:
-            total_count = float(0)
+
+                    print "after normalizing: ", self.state[key][letter][i]
+                index += 1
             
-            for i in range(len(self.trans[key])):
-                if self.trans[key][i] != None:
-                    total_count += self.trans[key][i]
-            for i in range(len(self.trans[key])):
-                if self.trans[key][i] != None:
-                    self.trans[key][i] /= total_count
+            for key in self.trans:
+                total_count = float(0)
+                
+                for i in range(len(self.trans[key])):
+                    if self.trans[key][i] != None:
+                        total_count += self.trans[key][i]
+                for i in range(len(self.trans[key])):
+                    if self.trans[key][i] != None:
+                        self.trans[key][i] /= total_count
                 
     def print_model(self):
         print 'MAT Emissions'

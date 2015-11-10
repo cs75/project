@@ -75,7 +75,7 @@ def build_model(aligned_sequences, psuedo_count=1, nucleotides=True):
                 for j in range(len(states[i])):
                     e1 = '%s' % states[prev_mat_states[-1]][j]
                     e2 = '%s' % states[i][j]
-                    print e1, '->', e2
+                    # print e1, '->', e2
                     
                     if e1 != '-' and e2 != '-':
                         model[('mat','mat')][prev_mat_states[-1]+1] += 1
@@ -86,7 +86,7 @@ def build_model(aligned_sequences, psuedo_count=1, nucleotides=True):
                     elif False:
                         model[('del','del')][prev_mat_states[-1]] += 1
                     
-                print 
+                # print 
                 
                 
                 
@@ -137,7 +137,7 @@ M[('del','mat')][3] += 1
 M[('del','del')][1] += 1
 M[('del','ins')][2] += 2
 
-M.print_model()
+# M.print_model()
 
 
 class Sequence(object):
@@ -148,8 +148,10 @@ class Sequence(object):
 
 
 def viterbi(model,sequence):
+    M.print_model()
     M.normalize()
     M.print_model()
+    # M.print_model()
 
 
     queue = deque
