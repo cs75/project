@@ -37,52 +37,46 @@ class HMMModel:
 
         letters = ['A', 'C', 'G', 'T']
 
-        
         #for each key in the current dictionary
-       
-
         for key in self.state:
-            index = 0
+
             #for i in the length of the number of states 
-
-            for i in range(len(self.state[key][letters[index]])):
-
+            for i in range(len(self.state[key][letters[0]])):
 
                 total_count = float(0)        
-
 
                 #for each character in the amino acid alphabet 
                 for letter in letters:
 
-
-                    print "value: ", self.state[key][letter][i], " for letter: ", letter, " at match state: ", i 
-                    # print self.state[key][letters[index]][i]
-                    # sleep(1)
-                    # initialize the count 
-                    #update counts 
                     if self.state[key][letter][i] != None:
                         total_count += self.state[key][letter][i]
                         # print total_count
-                
-                if self.state[key][letter][i] != None:
-                    print "total before normalized: ", total_count
 
                 for letter in letters:
                     if self.state[key][letter][i] != None:
                         self.state[key][letter][i] /= total_count
+                    # print "after normalizing: ", self.state[key][letter][i]
 
-                    print "after normalizing: ", self.state[key][letter][i]
-                index += 1
             
-            for key in self.trans:
+            init_trans = self.trans.keys()[0]
+
+
+            for i in range(len(self.trans[init_trans])):
+
                 total_count = float(0)
                 
-                for i in range(len(self.trans[key])):
+                for key in self.trans:
                     if self.trans[key][i] != None:
                         total_count += self.trans[key][i]
-                for i in range(len(self.trans[key])):
+
+                print "total: ", total_count
+
+                for key in self.trans:
                     if self.trans[key][i] != None:
                         self.trans[key][i] /= total_count
+                        print "normalized: ", self.trans[key][i]
+
+                # sleep(1)
                 
     def print_model(self):
         print 'MAT Emissions'
