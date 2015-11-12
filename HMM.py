@@ -1,8 +1,7 @@
-
-
 from HMMModel import *
 from State import *
 import math
+import sys
 
 NUM_STATES = 3
 
@@ -175,7 +174,9 @@ class Sequence(object):
 
 def viterbi(model,sequence):
     model.normalize()
-    matrix = [[Cell(0, 0, float(0)) for col in range(len(sequence)+1)] for row in range(len(model)*3+2)] # matrix
+    matrix = [[Cell(row, col, float(0)) for col in range(len(sequence)+1)] for row in range(len(model)*3+2)] # matrix
+
+    return
 
     for row in matrix:
         print row
@@ -191,20 +192,22 @@ def viterbi(model,sequence):
     for row in range(len(matrix)):
         for col in range(len(matrix[row])):
             if row > 0 and col > 0 and row < len(model)*3+1:
+
+
                 #print row,col, '\n', '---'
+                curr_cell = matrix[row][col]
 
-                matrix[row][col].state = STATE_TABLE[(row - 1) % NUM_STATES + 1]
+                curr_cell.state = STATE_TABLE[(row - 1) % NUM_STATES + 1]
 
-                print matrix[row][col].state
 
                 if row < 4 and col < 1: # from begin state
                     pass
 
-                elif state == 1: # match state
+                elif curr.state == "mat": # match state
                     #need to fill the matrix now
                     emission_prob = math.log(model['mat'][sequence[col-1]][curr_index])
-                    from_mat = (matrix[row-3][col-1] + math.log(model[('mat','mat')][curr_index-1]), (row -3, col - 1))
-                    from_ins = (matrix[row-2][col-1] + math.log(model[('ins','mat')][curr_index-1]), (row - 2, col - 1))
+                    from_mat = matrix[row-3][col-1].value + math.log(model[('mat','mat')][curr_index-1])
+                    from_ins = matrix[row-2][col-1].value + math.log(model[('ins','mat')][curr_index-1])
                     #print model[('del','mat')][curr_index]
 
 
@@ -213,13 +216,22 @@ def viterbi(model,sequence):
                     else:
                         from_del = matrix[row-1][col-1] + math.log(model[('del','mat')][curr_index-1])
 
+
+                    largest_value = -inf
+                    largest_cell = None
+                    for candidate in [from_mat, from_ins, from_del]:
+                         if candidate.value + math.log(model[('mat','mat')][curr_index-1]) > largest_value:
+                            largest_cell = candidate
+
+                    print largest_cell
+                    return
+
+
+
                     trans_prob = max(from_mat, from_ins, from_del)
-
-
-
                     matrix[row][col] = emission_prob + trans_prob
 
-                elif state == 2: # insert state
+                elif curr.state == "ins": # insert state
                     #print model['ins'][sequence[col-1]]
                     #print row
                     emission_prob = math.log(model['ins'][sequence[col-1]][curr_index])
@@ -236,7 +248,7 @@ def viterbi(model,sequence):
                     trans_prob = max(from_mat, from_ins, from_del)
                     matrix[row][col] = emission_prob + trans_prob
 
-                elif state == 3: # delete state
+                elif curr.state == "del": # delete state
                     if curr_index > 1:
                         from_mat = matrix[row-5][col] + math.log(model[('mat','del')][curr_index-1])
                         from_ins = matrix[row-4][col] + math.log(model[('ins','del')][curr_index-1])
