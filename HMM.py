@@ -6,12 +6,14 @@ import math
 
 NUM_STATES = 3
 
+STATE_TABLE = {1: "mat", 2: "ins", 3: "del"}
+
 
 
 class Cell(object):
     """
     Represents a cell in the matrix
-    
+
     row
     col
     state = "mat" "del" "ins"
@@ -163,9 +165,6 @@ M[('del','mat')][3] += 1
 M[('del','del')][1] += 1
 M[('del','ins')][2] += 2
 
-# M.#print_model()
-
-
 
 class Sequence(object):
 
@@ -173,7 +172,6 @@ class Sequence(object):
         self.letter = letter
         self.state = None
 
-NUM_STATES = 3
 
 def viterbi(model,sequence):
     model.normalize()
@@ -181,8 +179,6 @@ def viterbi(model,sequence):
 
     for row in matrix:
         print row
-
-    return
 
 
 
@@ -196,12 +192,14 @@ def viterbi(model,sequence):
         for col in range(len(matrix[row])):
             if row > 0 and col > 0 and row < len(model)*3+1:
                 #print row,col, '\n', '---'
-                state = (row - 1) % NUM_STATES + 1
-                #print state
 
+                matrix[row][col].state = STATE_TABLE[(row - 1) % NUM_STATES + 1]
 
-                if row < 4 and col < 4: # from begin state
+                print matrix[row][col].state
+
+                if row < 4 and col < 1: # from begin state
                     pass
+
                 elif state == 1: # match state
                     #need to fill the matrix now
                     emission_prob = math.log(model['mat'][sequence[col-1]][curr_index])
@@ -260,6 +258,6 @@ def viterbi(model,sequence):
 
 
 viterbi(M,"ACTGAT")
-viterbi(M,"TAGATTG")
+# viterbi(M,"TAGATTG")
 
 

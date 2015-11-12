@@ -73,7 +73,7 @@ class HMMModel:
                     if self.trans[key][i] != None:
                         total_count += self.trans[key][i]
 
-                print "total: ", total_count
+                # print "total: ", total_count
 
                 for key in self.trans:
                     if self.trans[key][i] != None:
