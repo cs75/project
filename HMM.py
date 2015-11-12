@@ -1,5 +1,10 @@
+
+        
 from HMMModel import *
 from State import *
+import math
+
+NUM_STATES = 3
 
 def Align(data):
     '''Description
@@ -140,39 +145,98 @@ M[('del','ins')][2] += 2
 # M.print_model()
 
 
+
 class Sequence(object):
 
     def __init__(self, letter):
         self.letter = letter
         self.state = None
 
+NUM_STATES = 3
 
 def viterbi(model,sequence):
-    M.print_model()
-    M.normalize()
-    M.print_model()
-    # M.print_model()
+    model.normalize()
+    matrix = [[float(0) for col in range(len(sequence)+1)] for row in range(len(model)*3+2)] # matrix
+    
+    for row in range(len(matrix)):
+        print matrix[row]
+
+    curr_index = 1
+    for row in range(len(matrix)):
+        for col in range(len(matrix[row])):
+            if row > 0 and col > 0 and row < len(model)*3+1:
+                print row,col, '\n', '---'
+                state = (row - 1) % NUM_STATES + 1
+                print state
+                
+                
+                if row < 4 and col < 4: # from begin state
+                    pass
+                elif state == 1: # match state
+                    #need to fill the matrix now 
+                    print len(model['mat']), "trying to acces: ", col - 1
+                    print len(model['mat'][sequence[col - 1]]), " trying to access row: ", row
+                    
+                    print model['mat'][sequence[col-1]]
+                    print curr_index
+                    print model['mat'][sequence[col-1]][1]
+                    
+                    print curr_index
+                    emission_prob = math.log(model['mat'][sequence[col-1]][curr_index])
+                    from_mat = matrix[row-3][col-1] + math.log(model[('mat','mat')][curr_index-1])
+                    from_ins = matrix[row-2][col-1] + math.log(model[('ins','mat')][curr_index-1])
+                    print model[('del','mat')][curr_index]
+                    
+                        
+                    if curr_index == 1:
+                        from_del = 0
+                    else:
+                        from_del = matrix[row-1][col-1] + math.log(model[('del','mat')][curr_index-1])
+                        
+                    trans_prob = max(from_mat, from_ins, from_del)
+                    matrix[row][col] = emission_prob + trans_prob
+                    
+                elif state == 2: # insert state
+                    print model['ins'][sequence[col-1]]
+                    print row
+                    emission_prob = math.log(model['ins'][sequence[col-1]][curr_index])
+                    from_mat = matrix[row-1][col-1] + math.log(model[('mat','ins')][curr_index-1])
+                    from_ins = matrix[row][col-1] + math.log(model[('ins','ins')][curr_index-1])
+                    
+                    if curr_index == 1:
+                        from_del = 0
+                    else:
+                        print 
+                        print
+                        print
+                        print       
+                        from_del = matrix[row+1][col-1] + math.log(model[('del','ins')][curr_index-1])
+                    
+                    print 'hererrerererererer', model[('del','ins')][curr_index-1]      
+                    
+                    trans_prob = max(from_mat, from_ins, from_del)                   
+                    matrix[row][col] = emission_prob + trans_prob
+                    
+                elif state == 3: # delete state
+                    if curr_index > 1:
+                        from_mat = matrix[row-5][col] + math.log(model[('mat','del')][curr_index-1])
+                        from_ins = matrix[row-4][col] + math.log(model[('ins','del')][curr_index-1])
+                        from_del = matrix[row-3][col] + math.log(model[('del','del')][curr_index-1])
+                        trans_prob = max(from_mat, from_ins, from_del)
+                        matrix[row][col] = trans_prob
+                    if col == len(sequence)-1:
+                        curr_index += 1
+                        print "incrementation", curr_index
+            else: # to end state
+                pass
+                
+            print
+    for row in matrix:
+        print row
 
 
-    queue = deque
-
-    for pos in range(len(sequence)):
-
-        if pos == 0:
-            lastState = "mat"
-
-        if sequence[pos] == "-":
-            currState = "del"
-
-
-            # clarify: convergent or modify input sequence?
-        # a -> t
-        # a -> a
 
 
 
-
-
-    pass
-
-viterbi(M,"ACTGA")
+viterbi(M,"ACTGAT")
+#viterbi(M,"TAGATTG")

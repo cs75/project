@@ -5,6 +5,7 @@ from time import sleep
 class HMMModel:
     def __init__(self,alphabet,match_state_count,psuedocount):
         self.alphabet = [letter for letter in alphabet]
+        self.match_state_count = match_state_count
         width = match_state_count + 1 # accounts for position 0
         every_state = ['mat','ins']
         every_trans = [('mat','mat'),('mat','ins'),('mat','del'),('ins','mat'),('ins','ins'),('ins','del'),('del','mat'),('del','ins'),('del','del')]
@@ -32,6 +33,9 @@ class HMMModel:
         elif self.trans.has_key(item): 
             return self.trans[item]
         return None
+        
+    def __len__(self):
+        return self.match_state_count
         
     def normalize(self):
 
