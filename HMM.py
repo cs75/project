@@ -312,10 +312,17 @@ def viterbi(model, sequence):
             else:  # to end state
                 pass
 
-            # print
+
+
+
     for row in matrix:
         print row
 
+    curr = matrix[9][6]
+
+    while curr:
+        print "backtracking to row: ", curr.row, "col: ", curr.col, "with value: ", curr.value, "and state is: ", curr.state
+        curr = curr.back
 
 viterbi(M, "ACTGAT")
 # viterbi(M,"TAGATTG")
