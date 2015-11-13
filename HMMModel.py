@@ -97,3 +97,10 @@ class HMMModel:
             for s2 in ['mat','del','ins']:
                 print '(%s,%s)' % (s1,s2), self.trans[(s1,s2)]
         print '\n---------------------------------\n'
+
+
+
+
+
+
+
