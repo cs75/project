@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python HMM.py
+python viterbi.py
