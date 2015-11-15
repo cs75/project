@@ -284,6 +284,8 @@ def viterbi(model, sequence):
     for row in matrix:
         print row
 
+
+    return
     # print matrix
 
     best = []
@@ -435,6 +437,9 @@ def viterbi(model, sequence):
 
 if __name__ == "__main__":
     
+
+
+    alphabet = 'AGCT'
     aligned_sequences = [   'AG---C',
                             'A-AG-C',
                             'AG-AA-',
@@ -442,11 +447,23 @@ if __name__ == "__main__":
                             'AG---C'
                         ]
 
-    alphabet = 'AGCT'
     # alphabet = 'GPAVLIMCFYWHKRQNEDST'
+
+    # aligned_sequences = Align("./training_data.txt")
+
+    # aligned_sequences = ['SPADKTNVKAAWGKVGA--HAGEYGAEALERMFLS',
+    #                  'TPEEKSAVTALWGKV----NVDEVGGEALGRLLVV',
+    #                  'SEGEWQLVLHVWAKVEA--DVAGHGQDILIRLFKS',
+    #                  'SADQISTVQASFDKVKG------DPVGILYAVFKA',
+    #                  'SAAEKTKIRSAWAPVYS--TYETSGVDILVKFFTS.'
+    #                  ]
+
+
+
 
     model = build_model(aligned_sequences, alphabet, 1)
     model.print_model()
 
-# viterbi(M, "ACTGAT")
+    viterbi(model, "TTTTTT")
+    # viterbi(model, "SAAQRQVIAATWKDIAGADNGAGVGKDCLIKFLSA")
 # viterbi(M,"TAGATTG")
