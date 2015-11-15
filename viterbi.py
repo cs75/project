@@ -284,9 +284,10 @@ def inside_matrix(row, num_rows):
 
 def viterbi(model, sequence, alphabet):
 
-    bg_distribution = (1.0 / len(alphabet) + 5) # e.g. 1 in (num letters + one gap) random chance
+    bg_distribution = (1.0 / (len(alphabet) + 1)) # e.g. 1 in (num letters + one gap) random chance
 
     model.normalize()
+    model.print_model()
     matrix = [[Cell(row, col, float(0)) for col in range(len(sequence) + 1)]
               for row in range(len(model) * 3 + 2)]  # matrix
 
@@ -309,7 +310,6 @@ def viterbi(model, sequence, alphabet):
 
             # skip the end state (which is last row)
             elif row == len(matrix) - 1 and col < len(sequence):
-                print "continuing"
                 continue
 
             curr = matrix[row][col]
@@ -325,7 +325,11 @@ def viterbi(model, sequence, alphabet):
             #################################
 
             elif curr.state == "mat" and row == 1:
+                print sequence[col - 1]
+                print model['mat'][sequence[col - 1]][curr_index]
                 emission_prob = math.log(model['mat'][sequence[col - 1]][curr_index] / (bg_distribution))
+                print emission_prob
+
                 curr.back = matrix[row - 1][col - 1]
                 curr.value = emission_prob + math.log(model[('mat', 'mat')][curr_index - 1])
 
@@ -416,23 +420,15 @@ def viterbi(model, sequence, alphabet):
                 from_del = matrix[row + 1][col - 1].value + math.log(model[('del', 'ins')][curr_index - 1])
 
                 # match was the best
-                if from_mat >= from_ins and from_mat >= from_del:
+                if from_mat >= from_ins:
                     curr.back = matrix[row - 1][col - 1]
                     curr.value = from_mat
 
                 # insertion was the best
-                elif from_ins > from_mat and from_ins > from_del:
+                else:
                     curr.back = matrix[row][col - 1]
                     curr.value = from_ins
 
-                # delete was the best
-                elif from_del > from_mat and from_del >= from_ins:
-                    curr.back = matrix[row + 1][col - 1]
-                    curr.value = from_del
-
-                else:
-                    print "problem comparing!"
-                    sys.exit(1)
 
             elif curr.state == "del":  # delete state
                 from_mat = matrix[row - 5][col].value + math.log(model[('mat', 'del')][curr_index - 1])
@@ -440,23 +436,14 @@ def viterbi(model, sequence, alphabet):
                 from_del = matrix[row - 3][col].value + math.log(model[('del', 'del')][curr_index - 1])
 
                 # match was the best
-                if from_mat >= from_ins and from_mat >= from_del:
+                if from_mat >= from_del:
                     curr.back = matrix[row - 5][col]
                     curr.value = from_mat
 
-                # insertion was the best
-                elif from_ins > from_mat and from_ins > from_del:
-                    curr.back = matrix[row - 4][col]
-                    curr.value = from_ins
-
                 # delete was the best
-                elif from_del > from_mat and from_del >= from_ins:
+                else:
                     curr.back = matrix[row - 3][col]
                     curr.value = from_del
-
-                else:
-                    print "problem comparing!"
-                    sys.exit(1)
 
                 if col == len(sequence) - 1:
                     curr_index += 1
@@ -473,29 +460,29 @@ def viterbi(model, sequence, alphabet):
 
 if __name__ == "__main__":
 
-    alphabet = 'AGCT'
-    aligned_sequences = ['AG---C',
-                         'A-AG-C',
-                         'AG-AA-',
-                         '--AAAC',
-                         'AG---C'
-                         ]
+    # alphabet = 'AGCT'
+    # aligned_sequences = ['AG---C',
+    #                      'A-AG-C',
+    #                      'AG-AA-',
+    #                      '--AAAC',
+    #                      'AG---C'
+    #                      ]
 
-    # alphabet = 'GPAVLIMCFYWHKRQNEDST'
+    alphabet = 'GPAVLIMCFYWHKRQNEDST'
 
     # aligned_sequences = Align("./training_data.txt")
 
-    # aligned_sequences = ['SPADKTNVKAAWGKVGA--HAGEYGAEALERMFLS',
-    #                  'TPEEKSAVTALWGKV----NVDEVGGEALGRLLVV',
-    #                  'SEGEWQLVLHVWAKVEA--DVAGHGQDILIRLFKS',
-    #                  'SADQISTVQASFDKVKG------DPVGILYAVFKA',
-    #                  'SAAEKTKIRSAWAPVYS--TYETSGVDILVKFFTS.'
-    #                  ]
+    aligned_sequences = ['SPADKTNVKAAWGKVGA--HAGEYGAEALERMFLS',
+                     'TPEEKSAVTALWGKV----NVDEVGGEALGRLLVV',
+                     'SEGEWQLVLHVWAKVEA--DVAGHGQDILIRLFKS',
+                     'SADQISTVQASFDKVKG------DPVGILYAVFKA',
+                     'SAAEKTKIRSAWAPVYS--TYETSGVDILVKFFTS'
+                     ]
 
     model = build_model(aligned_sequences, alphabet, 1)
     # model.normalize()
     # model.print_model()
 
-    viterbi(model, "AGAC", alphabet)
-    # viterbi(model, "SAAQRQVIAATWKDIAGADNGAGVGKDCLIKFLSA")
+    # viterbi(model, "GAT", alphabet)
+    viterbi(model, "CCCCCC", alphabet)
 # viterbi(M,"TAGATTG")

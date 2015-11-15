@@ -39,7 +39,8 @@ class HMMModel:
 
     def normalize(self):
 
-        letters = ['A', 'C', 'G', 'T']
+        # letters = ['A', 'C', 'G', 'T']
+        letters = self.alphabet
 
         #for each key in the current dictionary
         for key in self.state:
