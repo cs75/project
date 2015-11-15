@@ -6,6 +6,7 @@ import sys
 NUM_STATES = 3
 
 STATE_TABLE = {1: "mat", 2: "ins", 0: "del"}
+REVERSED_TABLE = {"mat": 1, "ins": 2, "del": 0}
 
 
 class Cell(object):
@@ -70,7 +71,9 @@ def build_model(aligned_sequences, alphabet, psuedo_count):
 
     prev_ins_emissions = ''
 
-    WIDTH = len(aligned_sequences)
+
+
+    WIDTH = len(sorted(aligned_sequences, key=len)[-1])
     count = 0
 
     for col in range(WIDTH + 1):  # +1 accounts for end state
@@ -303,9 +306,16 @@ def viterbi(model, sequence, alphabet):
     for row in range(len(matrix)):
         for col in range(len(matrix[0])):
 
-            # skip the begin state (which is row 0)
-            if row == 0:
+
+            if row == 0 and col == 0:
                 matrix[row][col].state = "mat"
+                continue
+
+            # skip the begin state (which is row 0)
+            elif row == 0 and col != 0:
+                matrix[row][col].state = "ins"
+                matrix[row][col].back = matrix[row][col - 1]
+                matrix[row][col].value = matrix[row][col - 1].value + math.log(model[('ins', 'ins')][curr_index - 1])
                 continue
 
             # skip the end state (which is last row)
@@ -317,34 +327,53 @@ def viterbi(model, sequence, alphabet):
 
             
             # need col to be incremented by 1
-            if col == 0:
+            if col == 0 and curr.state == "del":
                 matrix[row][col].state = curr.state 
+                matrix[row][col].back = matrix[row - (3 - REVERSED_TABLE[curr.state])][col]
 
             #################################
             ## BEGIN STATE handler block
             #################################
 
-            elif curr.state == "mat" and row == 1:
-                print sequence[col - 1]
-                print model['mat'][sequence[col - 1]][curr_index]
+            elif row == 1:
                 emission_prob = math.log(model['mat'][sequence[col - 1]][curr_index] / (bg_distribution))
-                print emission_prob
+                from_mat = matrix[row - 1][col - 1].value + math.log(model[('mat', 'mat')][curr_index - 1]) 
 
                 curr.back = matrix[row - 1][col - 1]
-                curr.value = emission_prob + math.log(model[('mat', 'mat')][curr_index - 1])
+                curr.value = emission_prob + from_mat
 
-            elif curr.state == "ins" and row == 2:
-                curr.back = matrix[row - 2][col - 1]
-                curr.value = math.log(model[('mat', 'ins')][curr_index - 1])
+            elif row == 2:
+                from_ins = matrix[row - 1][col - 1].value + math.log(model[('mat', 'ins')][curr_index - 1])
 
-            elif curr.state == "del" and row == 3:
-                curr.back = matrix[row - 3][col - 1]
-                curr.value = math.log(model[('mat', 'del')][curr_index - 1])
+                curr.back = matrix[row - 1][col - 1]
+                curr.value = from_ins
+
+            elif row == 3:
+                from_del = matrix[row - 1][col].value + math.log(model[('mat', 'del')][curr_index - 1])
+
+                curr.back = matrix[row - 1][col]
+                curr.value = from_del
 
                 # Hack to get around begin state edge case
-                if not already_incremented:
+                if not already_incremented and col == len(sequence):
                     curr_index += 1
                     already_incremented = True
+
+
+            # elif curr.state == "mat" and row == 1:
+            #     emission_prob = math.log(model['mat'][sequence[col - 1]][curr_index] / (bg_distribution))
+  
+            #     curr.back = matrix[row - 1][col - 1]
+            #     curr.value = emission_prob + math.log(model[('mat', 'mat')][curr_index - 1])
+
+            # elif curr.state == "ins" and row == 2:
+            #     curr.back = matrix[row - 2][col - 1]
+            #     curr.value = math.log(model[('mat', 'ins')][curr_index - 1])
+
+            # elif curr.state == "del" and row == 3:
+            #     curr.back = matrix[row - 3][col - 1]
+            #     curr.value = math.log(model[('mat', 'del')][curr_index - 1])
+
 
 
 
@@ -484,5 +513,6 @@ if __name__ == "__main__":
     # model.print_model()
 
     # viterbi(model, "GAT", alphabet)
-    viterbi(model, "CCCCCC", alphabet)
+    viterbi(model, "SAAQRQVIAATWKDIAGADNGAGVGKDCLIKFLSA", alphabet)
+    viterbi(model, "S", alphabet)
 # viterbi(M,"TAGATTG")
