@@ -71,10 +71,11 @@ def build_model(aligned_sequences, alphabet, psuedo_count):
 
     prev_ins_emissions = ''
 
+    # WIDTH = len(sorted(aligned_sequences, key=len)[-1])
 
 
-    WIDTH = len(sorted(aligned_sequences, key=len)[-1])
     count = 0
+    WIDTH = len(aligned_sequences[0])
 
     for col in range(WIDTH + 1):  # +1 accounts for end state
         if col < len(aligned_sequences[0]):
@@ -287,14 +288,13 @@ def inside_matrix(row, num_rows):
 
 def viterbi(model, sequence, alphabet):
 
-    bg_distribution = (1.0 / (len(alphabet) + 1)) # e.g. 1 in (num letters + one gap) random chance
+    # e.g. 1 in (num letters + one gap) random chance
+    bg_distribution = (1.0 / (len(alphabet) + 1))
 
     model.normalize()
     model.print_model()
     matrix = [[Cell(row, col, float(0)) for col in range(len(sequence) + 1)]
               for row in range(len(model) * 3 + 2)]  # matrix
-
-
 
     best = []
 
@@ -302,10 +302,8 @@ def viterbi(model, sequence, alphabet):
 
     already_incremented = False
 
-
     for row in range(len(matrix)):
         for col in range(len(matrix[0])):
-
 
             if row == 0 and col == 0:
                 matrix[row][col].state = "mat"
@@ -315,7 +313,8 @@ def viterbi(model, sequence, alphabet):
             elif row == 0 and col != 0:
                 matrix[row][col].state = "ins"
                 matrix[row][col].back = matrix[row][col - 1]
-                matrix[row][col].value = matrix[row][col - 1].value + math.log(model[('ins', 'ins')][curr_index - 1])
+                matrix[row][col].value = matrix[row][col - 1].value + \
+                    math.log(model[('ins', 'ins')][curr_index - 1])
                 continue
 
             # skip the end state (which is last row)
@@ -325,31 +324,35 @@ def viterbi(model, sequence, alphabet):
             curr = matrix[row][col]
             curr.state = STATE_TABLE[row % NUM_STATES]
 
-            
             # need col to be incremented by 1
             if col == 0 and curr.state == "del":
-                matrix[row][col].state = curr.state 
-                matrix[row][col].back = matrix[row - (3 - REVERSED_TABLE[curr.state])][col]
+                matrix[row][col].state = curr.state
+                matrix[row][col].back = matrix[
+                    row - (3 - REVERSED_TABLE[curr.state])][col]
 
             #################################
-            ## BEGIN STATE handler block
+            # BEGIN STATE handler block
             #################################
 
             elif row == 1:
-                emission_prob = math.log(model['mat'][sequence[col - 1]][curr_index] / (bg_distribution))
-                from_mat = matrix[row - 1][col - 1].value + math.log(model[('mat', 'mat')][curr_index - 1]) 
+                emission_prob = math.log(
+                    model['mat'][sequence[col - 1]][curr_index] / (bg_distribution))
+                from_mat = matrix[row - 1][col - 1].value + \
+                    math.log(model[('mat', 'mat')][curr_index - 1])
 
                 curr.back = matrix[row - 1][col - 1]
                 curr.value = emission_prob + from_mat
 
             elif row == 2:
-                from_ins = matrix[row - 1][col - 1].value + math.log(model[('mat', 'ins')][curr_index - 1])
+                from_ins = matrix[row - 1][col - 1].value + \
+                    math.log(model[('mat', 'ins')][curr_index - 1])
 
                 curr.back = matrix[row - 1][col - 1]
                 curr.value = from_ins
 
             elif row == 3:
-                from_del = matrix[row - 1][col].value + math.log(model[('mat', 'del')][curr_index - 1])
+                from_del = matrix[row - 1][col].value + \
+                    math.log(model[('mat', 'del')][curr_index - 1])
 
                 curr.back = matrix[row - 1][col]
                 curr.value = from_del
@@ -359,10 +362,9 @@ def viterbi(model, sequence, alphabet):
                     curr_index += 1
                     already_incremented = True
 
-
             # elif curr.state == "mat" and row == 1:
             #     emission_prob = math.log(model['mat'][sequence[col - 1]][curr_index] / (bg_distribution))
-  
+
             #     curr.back = matrix[row - 1][col - 1]
             #     curr.value = emission_prob + math.log(model[('mat', 'mat')][curr_index - 1])
 
@@ -374,13 +376,9 @@ def viterbi(model, sequence, alphabet):
             #     curr.back = matrix[row - 3][col - 1]
             #     curr.value = math.log(model[('mat', 'del')][curr_index - 1])
 
-
-
-
             #################################
-            ## END STATE handler block
+            # END STATE handler block
             #################################
-
 
             elif row == len(matrix) - 1 and col == len(sequence):
 
@@ -407,20 +405,22 @@ def viterbi(model, sequence, alphabet):
                     print "problem comparing!"
                     sys.exit(1)
 
-
-
             #################################
-            ## REGULAR STATE handler block
-            ## these are the regular cases in between begin and end states! (we're at >= row 4)
+            # REGULAR STATE handler block
+            # these are the regular cases in between begin and end states! (we're at >= row 4)
             #################################
 
             # match state
             elif curr.state == "mat":
-                emission_prob = math.log(model['mat'][sequence[col - 1]][curr_index] / (bg_distribution))
+                emission_prob = math.log(
+                    model['mat'][sequence[col - 1]][curr_index] / (bg_distribution))
 
-                from_mat = matrix[row - 3][col - 1].value + math.log(model[('mat', 'mat')][curr_index - 1]) 
-                from_ins = matrix[row - 2][col - 1].value + math.log(model[('ins', 'mat')][curr_index - 1])
-                from_del = matrix[row - 1][col - 1].value + math.log(model[('del', 'mat')][curr_index - 1])
+                from_mat = matrix[row - 3][col - 1].value + \
+                    math.log(model[('mat', 'mat')][curr_index - 1])
+                from_ins = matrix[row - 2][col - 1].value + \
+                    math.log(model[('ins', 'mat')][curr_index - 1])
+                from_del = matrix[row - 1][col - 1].value + \
+                    math.log(model[('del', 'mat')][curr_index - 1])
 
                 # match was the best
                 if from_mat >= from_ins and from_mat >= from_del:
@@ -441,12 +441,14 @@ def viterbi(model, sequence, alphabet):
                     print "problem comparing!"
                     sys.exit(1)
 
-
             # insert state
-            elif curr.state == "ins":  
-                from_mat = matrix[row - 1][col - 1].value + math.log(model[('mat', 'ins')][curr_index - 1])
-                from_ins = matrix[row][col - 1].value + math.log(model[('ins', 'ins')][curr_index - 1])
-                from_del = matrix[row + 1][col - 1].value + math.log(model[('del', 'ins')][curr_index - 1])
+            elif curr.state == "ins":
+                from_mat = matrix[row - 1][col - 1].value + \
+                    math.log(model[('mat', 'ins')][curr_index - 1])
+                from_ins = matrix[row][col - 1].value + \
+                    math.log(model[('ins', 'ins')][curr_index - 1])
+                from_del = matrix[row + 1][col - 1].value + \
+                    math.log(model[('del', 'ins')][curr_index - 1])
 
                 # match was the best
                 if from_mat >= from_ins:
@@ -458,11 +460,13 @@ def viterbi(model, sequence, alphabet):
                     curr.back = matrix[row][col - 1]
                     curr.value = from_ins
 
-
             elif curr.state == "del":  # delete state
-                from_mat = matrix[row - 5][col].value + math.log(model[('mat', 'del')][curr_index - 1])
-                from_ins = matrix[row - 4][col].value + math.log(model[('ins', 'del')][curr_index - 1])
-                from_del = matrix[row - 3][col].value + math.log(model[('del', 'del')][curr_index - 1])
+                from_mat = matrix[row - 5][col].value + \
+                    math.log(model[('mat', 'del')][curr_index - 1])
+                from_ins = matrix[row - 4][col].value + \
+                    math.log(model[('ins', 'del')][curr_index - 1])
+                from_del = matrix[row - 3][col].value + \
+                    math.log(model[('del', 'del')][curr_index - 1])
 
                 # match was the best
                 if from_mat >= from_del:
@@ -502,17 +506,18 @@ if __name__ == "__main__":
     # aligned_sequences = Align("./training_data.txt")
 
     aligned_sequences = ['SPADKTNVKAAWGKVGA--HAGEYGAEALERMFLS',
-                     'TPEEKSAVTALWGKV----NVDEVGGEALGRLLVV',
-                     'SEGEWQLVLHVWAKVEA--DVAGHGQDILIRLFKS',
-                     'SADQISTVQASFDKVKG------DPVGILYAVFKA',
-                     'SAAEKTKIRSAWAPVYS--TYETSGVDILVKFFTS'
-                     ]
+                         'SPEEKSAVTALWGKV----NVDEVGGEALGRLLVV',
+                         'SEGEWQLVLHVWAKVEA--DVAGHGQDILIRLFKS',
+                         'SADQISTVQASFDKVKG------DPVGILYAVFKA',
+                         'SAAEKTKIRSAWAPVYS--TYETSGVDILVKFFTS'
+                         ]
 
     model = build_model(aligned_sequences, alphabet, 1)
     # model.normalize()
     # model.print_model()
 
-    # viterbi(model, "GAT", alphabet)
+    # viterbi(model, "", alphabet)
     viterbi(model, "SAAQRQVIAATWKDIAGADNGAGVGKDCLIKFLSA", alphabet)
-    viterbi(model, "S", alphabet)
+    # viterbi(model, "[put a sequence here]", alphabet)
+    # viterbi(model, "S", alphabet)
 # viterbi(M,"TAGATTG")
