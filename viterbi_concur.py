@@ -2,7 +2,16 @@ from HMMModel import *
 from State import *
 import math
 import sys
-import numpy as np  
+import numpy as np 
+
+import threading
+
+
+# thread_matrix = None
+
+wavefront = None
+
+
 
 def Align(data):
     '''Description
@@ -224,7 +233,7 @@ class WavefrontCell(object):
         #, "back row: ", self.back.row, "back col: ", self.back.col, "value: ", self.value
 
     def __repr__(self):
-        return str('self.states')
+        return str(self.states)
         
 
 def standard_viterbi(model,sequence,alphabet):
@@ -308,12 +317,20 @@ def standard_viterbi(model,sequence,alphabet):
 
     print best_path
 
-def diagonal_viterbi(model,sequence):
+def diagonal_viterbi(model, alphabet, sequence):
     matrix = np.array([[WavefrontCell(row,col) for col in range(len(sequence)+2)] for row in range(len(model)+2)])
+
     bg_distribution = 1.0 / (len(alphabet) + 1)
     model.normalize()
 
     wavefront = [matrix[::-1,:].diagonal(i) for i in range(-matrix.shape[0]+1, matrix.shape[1])]
+
+
+    print wavefront
+
+
+    # print "wavefront: ", wavefront
+    return
     
     curr = None  # eventually set to final cell for backtracking
     
@@ -325,6 +342,10 @@ def diagonal_viterbi(model,sequence):
 
     for i in range(len(wavefront)):
         for j in range(len(wavefront[i])):
+            
+
+            
+            
             if i == 0:                                          # beg state
                 wavefront[i][j].states = {'mat':float(0)}
         
@@ -436,7 +457,7 @@ if __name__ == "__main__":
     # alphabet = 'GPAVLIMCFYWHKRQNEDST'
     # NTs
     alphabet = 'AGCT'
-    # aligned_sequences = Align("./tests/PF00005_seed.txt")
+    # aligned_sequences = Align("./test_cases/piwi_seed.txt")
     aligned_sequences = [   'AG---C',
                             'A-AG-C',
                             'AG-AA-',
@@ -446,8 +467,13 @@ if __name__ == "__main__":
 
     model = build_model(aligned_sequences, alphabet, 1)
     # model.print_model()
-    sequence = "ACGAAAA"
-    # sequence = "AGAAAAAAAAAAAAAAAAAAAAAAAAC"
 
-    diagonal_viterbi(model, sequence)
-    standard_viterbi(model, alphabet, sequence)
+    # sequence = 
+
+    sequence = "ACGAAAA"
+    # sequence = "GAGAGAGAGAGAGAGA"
+
+    # sequence = "MGQVWATDYKETLVLQQPLDFKDTEALPLLTVCRETATVQVHFPPSQVYKEDRRYDVRFQLDEEMDLGALFKDLSNGNPPPEGFVKALSVIFGYAPLRDAKTRVLGAGRYFKDSREERQDLVCMSNPDIPKLMTILRGFVQNVRPATGKFLLNVNVTYGIFRPKINLGRLLWPRAALIWGSDEKQRLGDLEKLHGIIQRTKILYKPPKKKGKPTDAQPNRSSVCTDQSHPGGPDDFVNRITIAGFARRKDSGQGKQTDFPNWEQARCKDGDDDITVKQYFEKYYKIALKHPELPLINRGTPEAPDYIPAERCWLDFGQARLAKIEQDDAAEMIRFACQRPFDNATKICNVGHAVLHLGSSNQTLQHFGLSVGNDLLKVQGRELDAPLLAYRQSNVPGVGGLWNLKDVSFCSPQARSWVLITLQPQPATTLPAIQDFKMEMLRLGMKMGNALMTFNIKEGGEKHIITGFHSFLKESKARGATLALIVFPYQQPSGVYNKIKFLGDVVHGLHTVCVIGRKFVKNGQTQREYFANVSLKINLKLGGTNHQLTHPPELFRGTMVVGYDAVHPTAVEKEDLPSHMALVASVDEGLGQWSGCYWTQKRRQEIADATNLKQHMKSRLELWMKERRRRPERIIIYRDGVSDSQYEAVMKDELPQIEAAYRDQFQGEEPKITLVVAVKRHSTRFYPSDPTHMTKSGNMRSGTIVDRGITEARYWEFFLTAHEAIQGTARPARYVVLRDDIFRTKYKKDGLVKGHDFTEAVNKLEEFTHKVCYLFGRATRAVSLCTPAYYADILCTRARAYESAIAHEPFKDMLGIRTRTVGAAEDEELRRIREMKVHDDLKNSMFWI"
+
+    diagonal_viterbi(model, alphabet, sequence)
+    # standard_viterbi(model, alphabet, sequence)
